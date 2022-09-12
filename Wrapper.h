@@ -21,13 +21,18 @@ struct data {
 
 class Wrapper {
 public:
-    Wrapper(string commandsFile) {
+    Wrapper(string commandsFile, string gameFile) {
         mCommandsFile = commandsFile;
         commandsStream.open(commandsFile);
+        mGameFile = gameFile;
+        gameStream.open(gameFile);
+
+        modified = false;
     }
 
     ~Wrapper()  {
 	    commandsStream.close();
+        gameStream.close();
     }
 
     Wrapper(const Wrapper& app) {
@@ -39,7 +44,9 @@ public:
 private:
     List<data> mCmds;
     string mCommandsFile;
+    string mGameFile;
     std::ifstream commandsStream;
+    std::ifstream gameStream;
 
     void importCmdList();
     data parseLine(string line, bool master);
@@ -51,6 +58,9 @@ private:
     void loadPreviousGame();
     void addCmd();
     void removeCmd();
+
+    bool modified;
+    void saveFiles();
 
     void randomizeIntArray(int intArray[], int length, int min, int max);
 };

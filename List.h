@@ -17,6 +17,7 @@ public:
 	bool isEmpty();
 	void clearList();
 	node<T>* getHead();
+	void setHead(node<T>* head);
 	int getLength();
 	node<T>* getNodeAtPosition(int n);
 
@@ -24,7 +25,6 @@ public:
 
 private:
 	node<T>* pHead;
-	int length;
 };
 
 /*************************************************************
@@ -37,8 +37,7 @@ private:
  *************************************************************/
 template <class T>
 List<T>::List() {
-	pHead = NULL;
-	length = 0;
+	pHead = nullptr;
 }
 
 /*************************************************************
@@ -64,7 +63,7 @@ List<T>::~List() {
  *************************************************************/
 template <class T>
 bool List<T>::isEmpty() {
-	return (pHead == NULL);
+	return (pHead == nullptr);
 }
 
 /*************************************************************
@@ -80,8 +79,7 @@ template <class T>
 void List<T>::clearList() {
 	if (!isEmpty()) {
 		delete pHead;
-		pHead = NULL;
-		length = 0;
+		pHead = nullptr;
 	}
 }
 
@@ -99,13 +97,27 @@ node<T>* List<T>::getHead() {
 }
 
 template <class T>
+void List<T>::setHead(node<T>* head) {
+	pHead = head;
+}
+
+template <class T>
 int List<T>::getLength() {
-	return this->length;
+	int count = 0;
+	node<T>* pCurrent = this->getHead();
+
+	// iterate over array and count nodes
+	while (pCurrent != nullptr) {
+		pCurrent = pCurrent->next;
+		count++;
+	}
+
+	return count;
 }
 
 template <class T>
 node<T>* List<T>::getNodeAtPosition(int n) {
-	if (n <= length - 1) {
+	if (n <= this->getLength() - 1) {
 		node<T>* pCurrent = pHead;
 		for (int i = 0; i < n; i++) {
 			pCurrent = pCurrent->next;
@@ -142,7 +154,6 @@ bool List<T>::insertAtFront(T& data) {
 			pHead = pNew;
 		}
 
-		length++;
 		return true;
 	}
 

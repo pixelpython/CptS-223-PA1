@@ -7,6 +7,11 @@ bool Wrapper::checkOpenFiles() {
 		return false;
 	}
 
+	if (!gameStream.is_open()) {
+		cout << "Unable to open " << mGameFile;
+		return false;
+	}
+
 	return true;
 }
 
@@ -44,6 +49,9 @@ void Wrapper::run() {
 			break;
 		case 6:
 			exit = true;
+			if (this->modified) {
+				saveFiles();
+			}
 			break;
 		}
 	}
@@ -161,11 +169,66 @@ void Wrapper::loadPreviousGame() {
 }
 
 void Wrapper::addCmd() {
+	string name, description;
+	cout << "Enter the command name to add: ";
+	cin >> name;
+	cout << "Enter the command description: ";
+	cin >> description;
+	cout << "Command '" << name << "' successfully added." << endl;
 
+	this->modified = true;
 }
 
 void Wrapper::removeCmd() {
+	// list must not be empty to remove any commands
+	if (!mCmds.isEmpty()) {
+		string name;
+		bool removed = false;
+		// get command to remove from user
+		cout << "Enter the command name to remove: ";
+		cin >> name;
 
+		node<data>* pCurrent = mCmds.getHead();
+		// check whether head matches
+		if (pCurrent->data.cmdName == name) {
+			// list remains intact by keeping a head node
+			mCmds.setHead(pCurrent->next);
+			// free memory
+			delete pCurrent;
+			removed = true;
+		}
+		else {
+			node<data>* pPrev = pCurrent;
+			pCurrent = pCurrent->next;
+
+			// iterate over list to search for matching name
+			while (pCurrent != nullptr) {
+				if (pCurrent->data.cmdName == name) {
+					// reconnect list to avoid matching node
+					pPrev->next = pCurrent->next;
+					// free memory
+					delete pCurrent;
+					removed = true;
+				}
+			}
+		}
+
+		// inform user whether command was successfully removed
+		if (removed) {
+			this->modified = true;
+			cout << "Command '" << name << "' successfully removed." << endl;
+		}
+		else {
+			cout << "Unable to find command '" << name << "' to remove." << endl;
+		}
+	}
+	else {
+		cout << "Command list is empty, unable to remove." << endl;
+	}
+}
+
+void Wrapper::saveFiles() {
+	
 }
 
 void Wrapper::randomizeIntArray(int intArray[], int length, int min, int max) {
