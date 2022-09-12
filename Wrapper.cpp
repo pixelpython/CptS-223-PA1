@@ -1,18 +1,5 @@
 #include "Wrapper.h"
 
-Wrapper::Wrapper(string commandsFile) {
-    mCommandsFile = commandsFile;
-    commandsStream.open(commandsFile);
-}
-
-Wrapper::~Wrapper() {
-	commandsStream.close();
-}
-
-Wrapper::Wrapper(const Wrapper& app) {
-	commandsStream.open(app.mCommandsFile);
-}
-
 bool Wrapper::checkOpenFiles() {
 	// check that commands file opened successfully
 	if (!commandsStream.is_open()) {
@@ -41,14 +28,19 @@ void Wrapper::run() {
 
 		switch (option) {
 		case 1:
+			printRules();
 			break;
 		case 2:
+			playGame();
 			break;
 		case 3:
+			loadPreviousGame();
 			break;
 		case 4:
+			addCmd();
 			break;
 		case 5:
+			removeCmd();
 			break;
 		case 6:
 			exit = true;
@@ -61,9 +53,14 @@ void Wrapper::printMenu() {
 	string options[6] = { "Game Rules", "Play Game", "Load Previous Game",
         "Add Command", "Remove Command", "Exit"};
 
-	for (int i = 0; i < 6; i++) {
-		cout << "[" << i << "] " << options[i] << std::endl;
+	for (int i = 1; i < 7; i++) {
+		cout << "[" << i << "] " << options[i - 1] << std::endl;
 	}
+}
+
+void Wrapper::printRules() {
+	cout << "The objective of the game is to match Linux commands to appropriate descriptions of those commands. If a command is matched, then the player earns 1 point. The if the command is not matched, then the player loses a point. Yes, negative point totals are possible. The player selects the number of match questions at the beginning of the game. The game continue until the number is reached.";
+	cout << endl;
 }
 
 void Wrapper::importCmdList() {
@@ -101,6 +98,105 @@ data Wrapper::parseLine(string line, bool master) {
 	newData.description = item;
 
 	return newData;
+}
+
+void Wrapper::playGame() {
+	int score = 0;
+	int totalGuesses = 0;
+	// prompt user for goal score to end game
+	int goal = promptIntInRange(1, 1024, "What score will you play to? ");
+	int cmdList[3];
+	int printOrder[3];
+	int usedCmds[mCmds.getLength()] = {0};
+
+	while (score < goal) {
+		// get three random commands
+		
+		// if the user exhausts all the commands
+		// then need to reset usedCmds to prevent infinite loop
+		if (totalGuesses == mCmds.getLength()) {
+			// with help from https://stackoverflow.com/questions/9146395/
+			memset(usedCmds, 0, sizeof(usedCmds));
+		}
+
+		do {
+			randomizeIntArray(cmdList, 3, 0, mCmds.getLength() - 1);
+		} while (usedCmds[ cmdList[0]]);
+		
+		// update list of used commands
+		usedCmds[ cmdList[0]] = 1;
+
+		// print in random order to screen
+		randomizeIntArray(printOrder, 3, 0, 2);
+
+		int correct = cmdList[0];
+		cout << mCmds.getNodeAtPosition(correct)->data.cmdName << endl;
+
+		int desc;
+		for (int i = 0; i < 3; i++) {
+			desc = printOrder[i];
+			cout << "[" << i << "]";
+			cout << mCmds.getNodeAtPosition( cmdList[desc] )->data.description << endl;
+		}
+
+		// get user guess and check adjust score
+		int guess = promptIntInRange(0, 2, "Which description does this command correspond to? ");
+		totalGuesses++;
+
+		clrscr();
+		if (printOrder[guess] == 0) {
+			score++;
+			cout << "Correct! Your score is now " << score << endl;
+		}
+		else {
+			score--;
+			cout << "Wrong! Your score is now " << score << endl;
+			cout << mCmds.getNodeAtPosition(0)->data.cmdName << " - " << mCmds.getNodeAtPosition(0)->data.description << endl;
+		}
+	}
+}
+
+void Wrapper::loadPreviousGame() {
+
+}
+
+void Wrapper::addCmd() {
+
+}
+
+void Wrapper::removeCmd() {
+
+}
+
+void Wrapper::randomizeIntArray(int intArray[], int length, int min, int max) {
+	int fill = 0;
+	int newInt;
+	bool valid;
+
+	// fill array with random integers in range
+	while (fill < length) {
+		// generate new int
+		newInt = randomIntInRange(min, max);
+		
+		valid = true;
+		// ensure newInt isn't in array already
+		for (int i = 0; i < fill; i++) {
+			// found in array
+			if (intArray[i] == newInt) {
+				valid = false;
+			}
+		}
+
+		// add newInt to end of array
+		if (valid) {
+			intArray[fill] = newInt;
+			fill++;
+		}
+	}
+}
+
+int randomIntInRange(int min, int max) {
+	return (rand()%(max-min+1))+min;
 }
 
 /*************************************************************

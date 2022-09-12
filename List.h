@@ -17,11 +17,14 @@ public:
 	bool isEmpty();
 	void clearList();
 	node<T>* getHead();
+	int getLength();
+	node<T>* getNodeAtPosition(int n);
 
 	bool insertAtFront(T& data);
 
 private:
 	node<T>* pHead;
+	int length;
 };
 
 /*************************************************************
@@ -35,6 +38,7 @@ private:
 template <class T>
 List<T>::List() {
 	pHead = NULL;
+	length = 0;
 }
 
 /*************************************************************
@@ -77,6 +81,7 @@ void List<T>::clearList() {
 	if (!isEmpty()) {
 		delete pHead;
 		pHead = NULL;
+		length = 0;
 	}
 }
 
@@ -93,6 +98,26 @@ node<T>* List<T>::getHead() {
 	return pHead;
 }
 
+template <class T>
+int List<T>::getLength() {
+	return this->length;
+}
+
+template <class T>
+node<T>* List<T>::getNodeAtPosition(int n) {
+	if (n <= length - 1) {
+		node<T>* pCurrent = pHead;
+		for (int i = 0; i < n; i++) {
+			pCurrent = pCurrent->next;
+		}
+
+		return pCurrent;
+	}
+	else {
+		return nullptr;
+	}
+}
+
 /*************************************************************
  * Function: insertAtFront ()                                *
  * Description: inserts new data at front of List            *
@@ -104,7 +129,8 @@ node<T>* List<T>::getHead() {
  *************************************************************/
 template <class T>
 bool List<T>::insertAtFront(T& data) {
-	node<T>* pNew = new node<T>(data);
+	node<T>* pNew = new node<T>;
+	pNew->data = data;
 
 	// check memory successfully allocated
 	if (pNew != 0) {
@@ -112,10 +138,11 @@ bool List<T>::insertAtFront(T& data) {
 			pHead = pNew;
 		}
 		else {
-			pNew->setNext(pHead);
+			pNew->next = pHead;
 			pHead = pNew;
 		}
 
+		length++;
 		return true;
 	}
 
