@@ -3,9 +3,9 @@
 #include "Wrapper.h"
 
 int main() {
-    srand((unsigned)time(0)); 
-    string csv = "commands.csv";
-	Wrapper app(csv);
+    srand((unsigned)time(0));
+    string cmds = "commands.csv", scores = "scores.csv";
+	Wrapper app(cmds, scores);
 	app.run();
 
     return 0;

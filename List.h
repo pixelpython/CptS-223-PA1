@@ -22,6 +22,7 @@ public:
 	node<T>* getNodeAtPosition(int n);
 
 	bool insertAtFront(T& data);
+	bool removeNode(node<T>* match);
 
 private:
 	node<T>* pHead;
@@ -157,5 +158,36 @@ bool List<T>::insertAtFront(T& data) {
 		return true;
 	}
 
+	return false;
+}
+
+template <class T>
+bool List<T>::removeNode(node<T>* match) {
+	node<T>* pCurrent = this->getHead();
+	// check whether head matches
+	if (pCurrent->data == match->data) {
+		// list remains intact by keeping a head node
+		this->setHead(pCurrent->next);
+		// free memory
+		delete pCurrent;
+		return true;
+	}
+	else {
+		node<T>* pPrev = pCurrent;
+		pCurrent = pCurrent->next;
+
+		// iterate over list to search for matching node
+		while (pCurrent != nullptr) {
+			if (pCurrent->data == match->data) {
+				// reconnect list to avoid match
+				pPrev->next = pCurrent->next;
+				// free memory
+				delete pCurrent;
+				return true;
+			}
+		}
+	}
+
+	// node was not removed
 	return false;
 }

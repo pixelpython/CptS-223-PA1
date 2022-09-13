@@ -16,11 +16,13 @@ bool Wrapper::checkOpenFiles() {
 }
 
 void Wrapper::run() {
-	int option;
+	int option, score = 0;
 	bool exit = !checkOpenFiles();
 
     // import initial list of commands from csv
     importCmdList();
+	// import previous game scores
+	importProfiles();
 
 	// on first run: as long as files were opened successfully
 	// thereafter: as long as user doesn't enter exit function
@@ -36,10 +38,10 @@ void Wrapper::run() {
 			printRules();
 			break;
 		case 2:
-			playGame();
+			playGame(score);
 			break;
 		case 3:
-			loadPreviousGame();
+			loadPreviousGame(score);
 			break;
 		case 4:
 			addCmd();
@@ -74,62 +76,97 @@ void Wrapper::printRules() {
 void Wrapper::importCmdList() {
 	string line;
 	mCmds.clearList();
-	data newData;
+	cmdData newData;
 
 	// with help from https://stackoverflow.com/questions/5343173/
 	commandsStream.clear();
 	commandsStream.seekg(0);
-
-	// discard title line
-	std::getline(commandsStream, line);
 	
-	// iterate 2nd line through end
-	while (std::getline(commandsStream, line)) {
-		newData = parseLine(line, false);
+	// iterate over each line of file
+	while (getline(commandsStream, line)) {
+		newData = parseCmdLine(line);
 		mCmds.insertAtFront(newData);
 	}
 }
 
-data Wrapper::parseLine(string line, bool master) {
-	string item, date;
-	std::stringstream lineStream, nameStream;
-	data newData;
+void Wrapper::importProfiles() {
+	string line;
+	for (int i = 0; i < 16; i++) {
+		players[i].name = "";
+		players[i].score = 0;
+	}
+	playerCount = 0;
+
+	// with help from https://stackoverflow.com/questions/5343173/
+	gameStream.clear();
+	gameStream.seekg(0);
+	
+	// iterate over each line of file or until profile limit
+	while (getline(gameStream, line) && playerCount < 16) {
+		players[playerCount] = parseProfile(line);
+		playerCount++;
+	}
+}
+
+cmdData Wrapper::parseCmdLine(string line) {
+	string item;
+	std::stringstream lineStream;
+	cmdData newData;
 
 	// load line into string stream
 	lineStream.str(line);
-	nameStream.str(string());
 
+	// name
 	getline(lineStream, item, ',');
-	newData.cmdName = item;
+	newData.name = item;
 
-	getline(lineStream, item, ',');
+	// next portion is quoted to allow commas within description
+	if (lineStream.peek() == '"') {
+		// ingest first quotation mark
+		getline(lineStream, item, '"');
+		// actually get description
+		getline(lineStream, item, '"');
+	} else {
+		getline(lineStream, item, ',');
+	}
 	newData.description = item;
 
 	return newData;
 }
 
-void Wrapper::playGame() {
-	int score = 0;
+profile Wrapper::parseProfile(string line) {
+	string item;
+	std::stringstream lineStream;
+	profile newData;
+
+	// load line into string stream
+	lineStream.str(line);
+
+	// name
+	getline(lineStream, item, ',');
+	newData.name = item;
+
+	// score
+	getline(lineStream, item, ',');
+	newData.score = stoi(item);
+
+	return newData;
+}
+
+void Wrapper::playGame(int startScore) {
+	int score = startScore;
 	int totalGuesses = 0;
-	// prompt user for goal score to end game
-	int goal = promptIntInRange(1, 1024, "What score will you play to? ");
+	// prompt user for questions score to end game
+	int questions = promptIntInRange(5, 30, "How many questions will you answer? ");
 	int cmdList[3];
 	int printOrder[3];
 	int usedCmds[mCmds.getLength()] = {0};
 
-	while (score < goal) {
+	for (int i = 0; i < questions; i++) {
 		// get three random commands
-		
-		// if the user exhausts all the commands
-		// then need to reset usedCmds to prevent infinite loop
-		if (totalGuesses == mCmds.getLength()) {
-			// with help from https://stackoverflow.com/questions/9146395/
-			memset(usedCmds, 0, sizeof(usedCmds));
-		}
-
 		do {
 			randomizeIntArray(cmdList, 3, 0, mCmds.getLength() - 1);
-		} while (usedCmds[ cmdList[0]]);
+		} while (usedCmds[ cmdList[0] ]);
 		
 		// update list of used commands
 		usedCmds[ cmdList[0]] = 1;
@@ -138,17 +175,17 @@ void Wrapper::playGame() {
 		randomizeIntArray(printOrder, 3, 0, 2);
 
 		int correct = cmdList[0];
-		cout << mCmds.getNodeAtPosition(correct)->data.cmdName << endl;
+		cout << mCmds.getNodeAtPosition(correct)->data.name << endl;
 
 		int desc;
 		for (int i = 0; i < 3; i++) {
 			desc = printOrder[i];
-			cout << "[" << i << "]";
+			cout << "[" << i << "] ";
 			cout << mCmds.getNodeAtPosition( cmdList[desc] )->data.description << endl;
 		}
 
 		// get user guess and check adjust score
-		int guess = promptIntInRange(0, 2, "Which description does this command correspond to? ");
+		int guess = promptIntInRange(0, 2, "Which command does this correspond to? ");
 		totalGuesses++;
 
 		clrscr();
@@ -159,13 +196,32 @@ void Wrapper::playGame() {
 		else {
 			score--;
 			cout << "Wrong! Your score is now " << score << endl;
-			cout << mCmds.getNodeAtPosition(0)->data.cmdName << " - " << mCmds.getNodeAtPosition(0)->data.description << endl;
+			cout << mCmds.getNodeAtPosition(0)->data.name << " - " << mCmds.getNodeAtPosition(0)->data.description << endl;
 		}
 	}
 }
 
-void Wrapper::loadPreviousGame() {
+void Wrapper::loadPreviousGame(int &score) {
+	string name;
+	bool found = false;
+	// get name from user
+	cout << "Enter your name: ";
+	cin >> name;
 
+	// find match for player profile
+	for (int i = 0; i < playerCount; i++) {
+		if (players[i].name == name) {
+			score = players[i].score;
+			found = true;
+			break;
+		}
+	}
+
+	if (found) {
+		cout << "Welcome back " << name << ". Your score is " << score << "." << endl; 
+	} else {
+		cout << "Unable to find matching profile for '" << name << "'." << endl;
+	}
 }
 
 void Wrapper::addCmd() {
@@ -188,28 +244,12 @@ void Wrapper::removeCmd() {
 		cout << "Enter the command name to remove: ";
 		cin >> name;
 
-		node<data>* pCurrent = mCmds.getHead();
-		// check whether head matches
-		if (pCurrent->data.cmdName == name) {
-			// list remains intact by keeping a head node
-			mCmds.setHead(pCurrent->next);
-			// free memory
-			delete pCurrent;
-			removed = true;
-		}
-		else {
-			node<data>* pPrev = pCurrent;
-			pCurrent = pCurrent->next;
-
-			// iterate over list to search for matching name
-			while (pCurrent != nullptr) {
-				if (pCurrent->data.cmdName == name) {
-					// reconnect list to avoid matching node
-					pPrev->next = pCurrent->next;
-					// free memory
-					delete pCurrent;
-					removed = true;
-				}
+		node<cmdData>* pCurrent = mCmds.getHead();
+		// iterate over list to find match
+		while (pCurrent != nullptr) {
+			if (pCurrent->data.name == name) {
+				removed = mCmds.removeNode(pCurrent);
+				break;
 			}
 		}
 
@@ -295,4 +335,8 @@ void clrscr() {
     // cross platform special characters that represent the clear screen cmd
     // with help from https://stackoverflow.com/questions/17335816/clear-screen-using-c
     cout << "\033[2J\033[1;1H";
+}
+
+bool operator==(const cmdData& lhs, const cmdData& rhs) {
+    return (lhs.name == rhs.name && lhs.description == rhs.description);
 }

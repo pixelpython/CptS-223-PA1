@@ -14,9 +14,14 @@ using std::cin;
 using std::endl;
 using std::string;
 
-struct data {
-    string cmdName;
+struct cmdData {
+    string name;
     string description;
+};
+
+struct profile {
+    string name;
+    int score;
 };
 
 class Wrapper {
@@ -42,20 +47,24 @@ public:
     void run();
     
 private:
-    List<data> mCmds;
+    List<cmdData> mCmds;
+    profile players[16];
+    int playerCount;
     string mCommandsFile;
     string mGameFile;
     std::ifstream commandsStream;
     std::ifstream gameStream;
 
     void importCmdList();
-    data parseLine(string line, bool master);
+    void importProfiles();
+    cmdData parseCmdLine(string line);
+    profile parseProfile(string line);
     bool checkOpenFiles();
     void printMenu();
     
     void printRules();
-    void playGame();
-    void loadPreviousGame();
+    void playGame(int startScore);
+    void loadPreviousGame(int &score);
     void addCmd();
     void removeCmd();
 
@@ -68,3 +77,4 @@ private:
 int randomIntInRange(int min, int max);
 int promptIntInRange(int min, int max, string message);
 void clrscr();
+bool operator==(const cmdData& lhs, const cmdData& rhs);
