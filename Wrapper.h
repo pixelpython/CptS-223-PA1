@@ -30,20 +30,16 @@ class Wrapper {
 public:
     Wrapper(string commandsFile, string gameFile) {
         mCommandsFile = commandsFile;
-        commandsStream.open(commandsFile);
         mGameFile = gameFile;
-        gameStream.open(gameFile);
 
         modified = false;
     }
 
-    ~Wrapper()  {
-	    commandsStream.close();
-        gameStream.close();
-    }
-
     Wrapper(const Wrapper& app) {
-        commandsStream.open(app.mCommandsFile);
+        mCommandsFile = app.mCommandsFile;
+        mGameFile = app.mGameFile;
+
+        modified = false;
     }
 
     void run();
@@ -54,14 +50,11 @@ private:
     int playerCount;
     string mCommandsFile;
     string mGameFile;
-    std::ifstream commandsStream;
-    std::ifstream gameStream;
 
     void importCmdList();
     void importProfiles();
     cmdData parseCmdLine(string line);
     profile parseProfile(string line);
-    bool checkOpenFiles();
     void printMenu();
     
     void printRules();
@@ -71,7 +64,9 @@ private:
     void removeCmd();
 
     bool modified;
-    void saveFiles();
+    void updateProfile(string name, int score);
+    void saveCmds();
+    void saveProfiles();
 
     void randomizeIntArray(int intArray[], int length, int min, int max);
 };

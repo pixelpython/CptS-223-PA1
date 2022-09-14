@@ -8,10 +8,12 @@ struct node {
     T data;
     node *next;
 
+	// constructor to initialize next to nullptr
+	// data should be assigned later by user
+	node() { next = nullptr; }
+
 	// destructor, important for freeing all List memory
-	~node() {
-		delete *next;
-	}
+	~node() { delete next; }
 };
 
 template <class T>
@@ -189,6 +191,8 @@ bool List<T>::removeNode(node<T>* match) {
 				delete pCurrent;
 				return true;
 			}
+			pPrev = pCurrent;
+			pCurrent = pCurrent->next;
 		}
 	}
 
