@@ -14,11 +14,13 @@ using std::cin;
 using std::endl;
 using std::string;
 
+// stores name and description pair of a Linux command
 struct cmdData {
     string name;
     string description;
 };
 
+// stores name and score pair of a player profile
 struct profile {
     string name;
     int score;

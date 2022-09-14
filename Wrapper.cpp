@@ -7,6 +7,7 @@ bool Wrapper::checkOpenFiles() {
 		return false;
 	}
 
+	// similarly check previous games file
 	if (!gameStream.is_open()) {
 		cout << "Unable to open " << mGameFile;
 		return false;
@@ -15,6 +16,11 @@ bool Wrapper::checkOpenFiles() {
 	return true;
 }
 
+/*************************************************************
+ * Function: run ()                                          *
+ * Description: runs the program wrapper, opening files and  *
+ *        allowing user to interact with the game            *
+ *************************************************************/
 void Wrapper::run() {
 	int option, score = 0;
 	bool exit = !checkOpenFiles();
@@ -59,20 +65,34 @@ void Wrapper::run() {
 	}
 }
 
+/*************************************************************
+ * Function: printMenu ()                                    *
+ * Description: displays program options to the sceen        *
+ *************************************************************/
 void Wrapper::printMenu() {
 	string options[6] = { "Game Rules", "Play Game", "Load Previous Game",
         "Add Command", "Remove Command", "Exit"};
 
+	// iterate over options and print to screen with corresponding option number
 	for (int i = 1; i < 7; i++) {
 		cout << "[" << i << "] " << options[i - 1] << std::endl;
 	}
 }
 
+/*************************************************************
+ * Function: printRules ()                                   *
+ * Description: print game rules to the screen               *
+ *************************************************************/
 void Wrapper::printRules() {
 	cout << "The objective of the game is to match Linux commands to appropriate descriptions of those commands. If a command is matched, then the player earns 1 point. The if the command is not matched, then the player loses a point. Yes, negative point totals are possible. The player selects the number of match questions at the beginning of the game. The game continue until the number is reached.";
 	cout << endl;
 }
 
+/*************************************************************
+ * Function: importCmdList ()                                *
+ * Description: iterate over command list file and parse     *
+ *        each line into cmdData struct, add to list         *
+ *************************************************************/
 void Wrapper::importCmdList() {
 	string line;
 	mCmds.clearList();
@@ -89,6 +109,11 @@ void Wrapper::importCmdList() {
 	}
 }
 
+/*************************************************************
+ * Function: importProfiles ()                               *
+ * Description: iterate over previous games file and parse   *
+ *        each line into profile struct, add to array        *
+ *************************************************************/
 void Wrapper::importProfiles() {
 	string line;
 	for (int i = 0; i < 16; i++) {
@@ -108,6 +133,11 @@ void Wrapper::importProfiles() {
 	}
 }
 
+/*************************************************************
+ * Function: parseCmdLine ()                                 *
+ * Description: parse csv lines from command pairs into      *
+ *        cmdData struct                                     *
+ *************************************************************/
 cmdData Wrapper::parseCmdLine(string line) {
 	string item;
 	std::stringstream lineStream;
@@ -134,6 +164,11 @@ cmdData Wrapper::parseCmdLine(string line) {
 	return newData;
 }
 
+/*************************************************************
+ * Function: parseProfile ()                                 *
+ * Description: parse csv lines from previous games file     *
+ *        into profile struct                                *
+ *************************************************************/
 profile Wrapper::parseProfile(string line) {
 	string item;
 	std::stringstream lineStream;
@@ -153,6 +188,11 @@ profile Wrapper::parseProfile(string line) {
 	return newData;
 }
 
+/*************************************************************
+ * Function: playGame ()                                     *
+ * Description: allows user to play game defined in earlier  *
+ *        in printRules ()                                   *
+ *************************************************************/
 void Wrapper::playGame(int startScore) {
 	int score = startScore;
 	int totalGuesses = 0;
@@ -174,10 +214,12 @@ void Wrapper::playGame(int startScore) {
 		// print in random order to screen
 		randomizeIntArray(printOrder, 3, 0, 2);
 
+		// print command to guess for
 		int correct = cmdList[0];
 		cout << mCmds.getNodeAtPosition(correct)->data.name << endl;
 
 		int desc;
+		// print each description to the screen
 		for (int i = 0; i < 3; i++) {
 			desc = printOrder[i];
 			cout << "[" << i << "] ";
@@ -189,6 +231,7 @@ void Wrapper::playGame(int startScore) {
 		totalGuesses++;
 
 		clrscr();
+		// indicate whether guess was correct, and update score
 		if (printOrder[guess] == 0) {
 			score++;
 			cout << "Correct! Your score is now " << score << endl;
@@ -196,11 +239,16 @@ void Wrapper::playGame(int startScore) {
 		else {
 			score--;
 			cout << "Wrong! Your score is now " << score << endl;
+			// show correct answer
 			cout << mCmds.getNodeAtPosition(0)->data.name << " - " << mCmds.getNodeAtPosition(0)->data.description << endl;
 		}
 	}
 }
 
+/*************************************************************
+ * Function: loadPreviousGame ()                             *
+ * Description: loads previous game scores from scores.csv   *
+ *************************************************************/
 void Wrapper::loadPreviousGame(int &score) {
 	string name;
 	bool found = false;
@@ -224,6 +272,10 @@ void Wrapper::loadPreviousGame(int &score) {
 	}
 }
 
+/*************************************************************
+ * Function: addCmd ()                                       *
+ * Description: allows user to add command to quiz list      *
+ *************************************************************/
 void Wrapper::addCmd() {
 	string name, description;
 	cout << "Enter the command name to add: ";
@@ -235,6 +287,10 @@ void Wrapper::addCmd() {
 	this->modified = true;
 }
 
+/*************************************************************
+ * Function: removeCmd ()                                    *
+ * Description: allows user to remove command from quiz list *
+ *************************************************************/
 void Wrapper::removeCmd() {
 	// list must not be empty to remove any commands
 	if (!mCmds.isEmpty()) {
@@ -267,10 +323,22 @@ void Wrapper::removeCmd() {
 	}
 }
 
+/*************************************************************
+ * Function: saveFiles ()                                    *
+ * Description: saves game and command data to scores.csv    *
+ *        and commands.csv, respectively                     *
+ *************************************************************/
 void Wrapper::saveFiles() {
 	
 }
 
+/*************************************************************
+ * Function: randomizeIntArray ()                            *
+ * Description: randomizes integer array with unique ints    *
+ *        within the range provided                          *
+ * Preconditions: min <= max, length is len of intArray[]    *
+ * Postconditions: min <= ints <= max                        *
+ *************************************************************/
 void Wrapper::randomizeIntArray(int intArray[], int length, int min, int max) {
 	int fill = 0;
 	int newInt;
@@ -298,6 +366,12 @@ void Wrapper::randomizeIntArray(int intArray[], int length, int min, int max) {
 	}
 }
 
+/*************************************************************
+ * Function: randomIntInRange ()                             *
+ * Description: returns random int in the range provided     *
+ * Preconditions: min <= max                                 *
+ * Postconditions: min <= int <= max                         *
+ *************************************************************/
 int randomIntInRange(int min, int max) {
 	return (rand()%(max-min+1))+min;
 }
@@ -305,9 +379,7 @@ int randomIntInRange(int min, int max) {
 /*************************************************************
  * Function: promptIntInRange ()                             *
  * Description: prompts user with given message for an int   *
- *        within the range provided                            *
- * Input parameters: int min, int max, string message        *
- * Returns: int                                              *
+ *        within the range provided                          *
  * Preconditions: min <= max                                 *
  * Postconditions: min <= int <= max                         *
  *************************************************************/
@@ -331,12 +403,20 @@ int promptIntInRange(int min, int max, string message) {
     return prompt;
 }
 
+/*************************************************************
+ * Function: clrscr ()                                       *
+ * Description: clears the screen                            *
+ *************************************************************/
 void clrscr() {
     // cross platform special characters that represent the clear screen cmd
     // with help from https://stackoverflow.com/questions/17335816/clear-screen-using-c
     cout << "\033[2J\033[1;1H";
 }
 
+/*************************************************************
+ * Function: operator==                                      *
+ * Description: comparison operator overload for cmdData     *
+ *************************************************************/
 bool operator==(const cmdData& lhs, const cmdData& rhs) {
     return (lhs.name == rhs.name && lhs.description == rhs.description);
 }
