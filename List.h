@@ -2,10 +2,16 @@
 
 #include <iostream>
 
+// linked List node template
 template <typename T>
 struct node {
     T data;
     node *next;
+
+	// destructor, important for freeing all List memory
+	~node() {
+		delete *next;
+	}
 };
 
 template <class T>
@@ -31,10 +37,6 @@ private:
 /*************************************************************
  * Function: List ()                                         *
  * Description: default constructor for List class           *
- * Input parameters:                                         *
- * Returns:                                                  *
- * Preconditions:                                            *
- * Postconditions:                                           *
  *************************************************************/
 template <class T>
 List<T>::List() {
@@ -44,10 +46,6 @@ List<T>::List() {
 /*************************************************************
  * Function: ~List ()                                        *
  * Description: destructor for List class                    *
- * Input parameters:                                         *
- * Returns:                                                  *
- * Preconditions:                                            *
- * Postconditions:                                           *
  *************************************************************/
 template <class T>
 List<T>::~List() {
@@ -57,10 +55,6 @@ List<T>::~List() {
 /*************************************************************
  * Function: isEmpty ()                                      *
  * Description: determines whether list is empty             *
- * Input parameters:                                         *
- * Returns: bool                                             *
- * Preconditions:                                            *
- * Postconditions:                                           *
  *************************************************************/
 template <class T>
 bool List<T>::isEmpty() {
@@ -71,10 +65,6 @@ bool List<T>::isEmpty() {
  * Function: clearList ()                                    *
  * Description: deletes all nodes in list and resets pHead   *
  *		to NULL                                              *
- * Input parameters:                                         *
- * Returns:                                                  *
- * Preconditions:                                            *
- * Postconditions:                                           *
  *************************************************************/
 template <class T>
 void List<T>::clearList() {
@@ -87,21 +77,26 @@ void List<T>::clearList() {
 /*************************************************************
  * Function: getHead ()                                      *
  * Description: get head pointer of list                     *
- * Input parameters:                                         *
- * Returns: node<T>*                                         *
- * Preconditions:                                            *
- * Postconditions:                                           *
  *************************************************************/
 template <class T>
 node<T>* List<T>::getHead() {
 	return pHead;
 }
 
+/*************************************************************
+ * Function: setHead ()                                      *
+ * Description: sets the head pointer of list to new node    *
+ *        within the range provided                          *
+ *************************************************************/
 template <class T>
 void List<T>::setHead(node<T>* head) {
 	pHead = head;
 }
 
+/*************************************************************
+ * Function: getLength ()                                    *
+ * Description: calculates the length of the list            *
+ *************************************************************/
 template <class T>
 int List<T>::getLength() {
 	int count = 0;
@@ -116,6 +111,12 @@ int List<T>::getLength() {
 	return count;
 }
 
+/*************************************************************
+ * Function: getNodeAtPosition ()                            *
+ * Description: returns pointer to the node at specified     *
+ *        position n                                         *
+ * Preconditions: n <= (list length - 1)                     *
+ *************************************************************/
 template <class T>
 node<T>* List<T>::getNodeAtPosition(int n) {
 	if (n <= this->getLength() - 1) {
@@ -134,9 +135,6 @@ node<T>* List<T>::getNodeAtPosition(int n) {
 /*************************************************************
  * Function: insertAtFront ()                                *
  * Description: inserts new data at front of List            *
- * Input parameters: T& data                                 *
- * Returns: bool                                             *
- * Preconditions:                                            *
  * Postconditions: returns true if allocated successfully,   *
  *		false otherwise                                      *
  *************************************************************/
@@ -161,6 +159,12 @@ bool List<T>::insertAtFront(T& data) {
 	return false;
 }
 
+/*************************************************************
+ * Function: removeNode ()                                   *
+ * Description: removes matching node from the list,         *
+ * 			returns removal success                          *
+ * Preconditions: node<T>* match is in list                  *
+ *************************************************************/
 template <class T>
 bool List<T>::removeNode(node<T>* match) {
 	node<T>* pCurrent = this->getHead();
