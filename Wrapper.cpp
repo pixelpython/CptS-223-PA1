@@ -69,7 +69,7 @@ void Wrapper::printMenu() {
  * Description: print game rules to the screen               *
  *************************************************************/
 void Wrapper::printRules() {
-	cout << "The objective of the game is to match Linux commands to appropriate descriptions of those commands. If a command is matched, then the player earns 1 point. The if the command is not matched, then the player loses a point. Yes, negative point totals are possible. The player selects the number of match questions at the beginning of the game. The game continue until the number is reached.";
+	cout << "The objective is to match Linux commands to descriptions of those commands. If a command guess, the player earns 1 point. If the guess is incorrect, the player loses a point. Negative point totals are possible. The player selects between five and thirty questions at the beginning of the game.";
 	cout << endl;
 }
 
@@ -200,7 +200,7 @@ void Wrapper::playGame(int startScore) {
 	cin >> name;
 
 	// prompt user for questions score to end game
-	int questions = promptIntInRange(1, 30, "How many questions will you answer? ");
+	int questions = promptIntInRange(5, 30, "How many questions will you answer? ");
 	int cmdList[3];
 	int printOrder[3];
 	int usedCmds[mCmds.getLength()] = {0};
@@ -285,8 +285,33 @@ void Wrapper::loadPreviousGame(int &score) {
  *************************************************************/
 void Wrapper::addCmd() {
 	cmdData newData;
-	cout << "Enter the command name to add: ";
-	cin >> newData.name;
+	bool valid = false;
+	node<cmdData>* pCurrent;
+
+	while (!valid) {
+		cout << "Enter the command name to add [or 'quit']: ";
+		cin >> newData.name;
+
+		valid = true;
+		pCurrent = mCmds.getHead();
+		// ensure command isn't a duplicate
+		while (pCurrent != nullptr) {
+			// allow user to quit
+			if (newData.name == "quit") {
+				return;
+			}
+			if (pCurrent->data.name == newData.name) {
+				valid = false;
+				break;
+			}
+			pCurrent = pCurrent->next;
+		}
+
+		if (!valid) {
+			cout << "Duplicate command entered. Please try again." << endl;
+		}
+	}
+	
 	cout << "Enter the command description: ";
 	// ingest newline in first
 	getline(cin, newData.description);
